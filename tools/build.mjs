@@ -33,7 +33,7 @@ for (const ch of [...chars].sort()) {
 }
 
 fs.mkdirSync(path.join(root, 'vendor'), { recursive: true });
-const js = '/* Tự sinh bởi tools/build.mjs từ hanzi-writer-data (Make Me a Hanzi, Arphic Public License) */\n' +
+const js = '/* Dữ liệu nét chữ: hanzi-writer-data, dẫn xuất từ Make Me a Hanzi (Shaunak Kishore) và font Arphic (Arphic Technology Co., Ltd., 1999). Giấy phép: Arphic Public License, xem licenses/ARPHICPL.TXT. Tự sinh bởi tools/build.mjs. */\n' +
   'window.HANZI_DATA = ' + JSON.stringify(out) + ';\n';
 fs.writeFileSync(path.join(root, 'vendor', 'strokes.js'), js);
 

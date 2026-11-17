@@ -45,3 +45,6 @@ Dùng nhận diện giọng nói của trình duyệt (Chrome/Edge, cần mạng
 
 ## Dùng trên điện thoại (iPhone, Android)
 Trên máy tính, bấm đúp `Chay-tren-dien-thoai.bat` (hoặc chạy `node tools/serve.mjs 8080 --lan`). Cửa sổ sẽ in địa chỉ dạng `http://192.168.x.x:8080`. Đặt điện thoại cùng Wi-Fi, mở Safari/Chrome và gõ địa chỉ đó. Cần giữ cửa sổ mở trong lúc dùng. Trên iPhone, dùng nút Chia sẻ → Thêm vào Màn hình chính để có biểu tượng như ứng dụng.
+
+## Bản quyền và giấy phép
+Xem [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) và thư mục `licenses/`. Dự án dùng Hanzi Writer (MIT) và dữ liệu nét chữ theo Arphic Public License; "HSK" là nhãn hiệu của chủ sở hữu, dự án này độc lập và không được chứng nhận bởi họ. Nội dung bài học do tác giả biên soạn; hãy tự chọn giấy phép (ví dụ MIT hoặc CC BY-NC-SA) trước khi cho phép người khác tái sử dụng.

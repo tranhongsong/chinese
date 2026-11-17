@@ -429,6 +429,7 @@ const routes = [
   [/^\/dict$/, viewDict],
   [/^\/listen$/, viewListen],
   [/^\/exam$/, viewExam],
+  [/^\/about$/, viewAbout],
   [/^\/speak$/, viewSpeak],
   [/^\/ask$/, viewAsk],
 ];
@@ -957,6 +958,25 @@ function runQuizEngine(box, qs, finishFn) {
     }
   };
   show();
+}
+
+/* ================= Giới thiệu và bản quyền ================= */
+function viewAbout() {
+  const L = window.LICENSES || {};
+  view.innerHTML = `<div class="page-head"><h1>Giới thiệu và bản quyền</h1><p>Hán ngữ nhập môn là công cụ tự học tiếng Trung (HSK 1) chạy ngay trong trình duyệt, không thu thập dữ liệu cá nhân. Tiến độ học chỉ lưu trên thiết bị của bạn.</p></div>
+    <div class="card"><h3>Nội dung bài học</h3><p>Hội thoại, từ vựng, ngữ pháp, câu giao tiếp, bài tập, mẹo học và lời giảng của cô giáo ảo do tác giả trang biên soạn, tham khảo kiến thức ngôn ngữ phổ thông và danh sách từ vựng HSK 1 công khai. Trang <b>không sao chép</b> giáo trình hay đề thi của bất kỳ nhà xuất bản nào.</p>
+      <p class="small muted">"HSK" là nhãn hiệu của chủ sở hữu kỳ thi tương ứng. Trang này là sản phẩm độc lập, <b>không liên kết, không được tài trợ hay chứng nhận</b> bởi tổ chức tổ chức kỳ thi HSK. Bài kiểm tra cuối khoá chỉ là bài tự đánh giá, không thay thế chứng chỉ HSK chính thức.</p></div>
+    <div class="card" style="margin-top:12px"><h3>Thành phần bên thứ ba</h3>
+      <ul>
+        <li><b>Hanzi Writer</b> v3.7.3, Copyright © 2014 David Chanin, giấy phép MIT. Dùng để vẽ và chấm nét chữ. <a href="https://chanind.github.io/hanzi-writer" target="_blank" rel="noopener noreferrer">chanind.github.io/hanzi-writer</a></li>
+        <li><b>Dữ liệu nét chữ</b> (hanzi-writer-data) dẫn xuất từ dự án <b>Make Me a Hanzi</b> (Shaunak Kishore) và font Arphic của Arphic Technology Co., Ltd. (1999), theo <b>Arphic Public License</b>. Dữ liệu này được phân phối kèm văn bản giấy phép bên dưới.</li>
+        <li><b>Giọng đọc và nhận diện giọng nói</b> do trình duyệt/hệ điều hành cung cấp (Web Speech API), không nằm trong trang.</li>
+        <li><b>Video nhúng</b> (YouTube, TikTok, Bilibili) thuộc quyền của chủ kênh và nền tảng. Trang chỉ nhúng trình phát chính thức, không tải hay sao chép video.</li>
+      </ul></div>
+    <div class="card" style="margin-top:12px"><h3>Văn bản giấy phép</h3>
+      <details><summary><b>MIT License (Hanzi Writer)</b></summary><pre style="white-space:pre-wrap;font-size:.82rem">${esc(L.mit || 'Xem thư mục licenses/')}</pre></details>
+      <details style="margin-top:8px"><summary><b>Arphic Public License (dữ liệu nét chữ)</b></summary><pre style="white-space:pre-wrap;font-size:.82rem">${esc(L.arphic || 'Xem thư mục licenses/')}</pre></details></div>
+    <p class="small muted" style="margin-top:12px">Nếu bạn là chủ sở hữu một nội dung và cho rằng nó được dùng không phù hợp, hãy liên hệ chủ kho mã nguồn để được gỡ hoặc ghi nguồn lại.</p>`;
 }
 
 /* ================= Kiểm tra cuối khoá ================= */
