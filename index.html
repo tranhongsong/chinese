@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hán ngữ nhập môn</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<noscript><p style="padding:16px;font:16px sans-serif">Trang này cần bật JavaScript. Trên iPhone, hãy mở file bằng Safari hoặc Chrome (không mở bằng bản xem trước của ứng dụng Tệp/Mail).</p></noscript>
+<div id="errBanner" hidden style="position:fixed;left:0;right:0;top:0;z-index:999;background:#b3261e;color:#fff;padding:8px 12px;font:13px/1.4 sans-serif"></div>
+<script>window.addEventListener('error',function(e){var b=document.getElementById('errBanner');if(!b)return;b.hidden=false;b.textContent='Lỗi: '+(e.message||'không rõ')+(e.filename?' ('+String(e.filename).split('/').pop()+':'+e.lineno+')':'');});</script>
+<header class="topbar">
+  <button class="icon-btn" id="menuBtn" aria-label="Mở menu">☰</button>
+  <a class="brand" href="#/"><span class="brand-zh kai">汉语</span><span class="brand-vi">Hán ngữ nhập môn</span></a>
+  <div class="topbar-right">
+    <span class="voice-status" id="voiceStatus" title="Trạng thái giọng đọc"></span>
+    <button class="icon-btn" id="settingsBtn" aria-label="Cài đặt">⚙</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="side" id="side" aria-label="Điều hướng">
+    <a href="#/" data-route="home"><b>🏠</b> Trang chủ</a>
+    <div class="side-title">Bước 1 · Nền tảng</div>
+    <a href="#/pinyin" data-route="pinyin"><b>🔊</b> Phát âm Pinyin</a>
+    <a href="#/tones" data-route="tones"><b>🎵</b> Bài thanh điệu</a>
+    <a href="#/writing" data-route="writing"><b>✍</b> Nét &amp; quy tắc viết</a>
+    <a href="#/radicals" data-route="radicals"><b>部</b> Bộ thủ</a>
+    <div class="side-title">Bước 2 · Bài học</div>
+    <a href="#/lessons" data-route="lessons"><b>📘</b> 15 bài HSK 1</a>
+    <a href="#/exam" data-route="exam"><b>🏆</b> Kiểm tra cuối khoá</a>
+    <div class="side-title">Bước 3 · Luyện tập</div>
+    <a href="#/review" data-route="review"><b>🃏</b> Ôn từ vựng</a>
+    <a href="#/write" data-route="write"><b>✎</b> Luyện viết chữ</a>
+    <a href="#/speak" data-route="speak"><b>🎤</b> Luyện nói</a>
+    <a href="#/listen" data-route="listen"><b>👂</b> Nghe &amp; gõ pinyin</a>
+    <a href="#/dict" data-route="dict"><b>🔍</b> Tra từ</a>
+    <a href="#/ask" data-route="ask"><b>💬</b> Câu giao tiếp</a>
+  </nav>
+  <main id="view" tabindex="-1"></main>
+</div>
+
+<nav class="bottomnav" aria-label="Điều hướng nhanh">
+  <a href="#/" data-route="home"><b>🏠</b><span>Trang chủ</span></a>
+  <a href="#/lessons" data-route="lessons"><b>📘</b><span>Bài học</span></a>
+  <a href="#/review" data-route="review"><b>🃏</b><span>Ôn tập</span></a>
+  <a href="#/speak" data-route="speak"><b>🎤</b><span>Luyện nói</span></a>
+  <a href="#/ask" data-route="ask"><b>💬</b><span>Giao tiếp</span></a>
+  <button id="bnMenu" type="button"><b>☰</b><span>Menu</span></button>
+</nav>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true"><button class="modal-x" id="modalX" aria-label="Đóng">×</button><div id="modalBody"></div></div>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="vendor/hanzi-writer.min.js"></script>
+<script src="vendor/strokes.js"></script>
+<script src="audio/manifest.js"></script>
+<script src="data/pinyin.js"></script>
+<script src="data/writing.js"></script>
+<script src="data/radicals.js"></script>
+<script src="data/lessons.js"></script>
+<script src="data/tones.js"></script>
+<script src="data/ask.js"></script>
+<script src="data/phrases.js"></script>
+<script src="video/manifest.js"></script>
+<script src="js/lecture.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

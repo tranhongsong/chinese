@@ -1,0 +1,42 @@
+/* Nét cơ bản & quy tắc bút thuận */
+window.WRITING = {
+  strokes: [
+    { n: '横', py: 'héng', vi: 'Nét ngang', sym: '一', desc: 'Viết từ trái sang phải, hơi dốc lên.', ex: [['一', 'yī', 'một'], ['二', 'èr', 'hai'], ['三', 'sān', 'ba']] },
+    { n: '竖', py: 'shù', vi: 'Nét sổ', sym: '丨', desc: 'Viết từ trên xuống dưới, thẳng.', ex: [['十', 'shí', 'mười'], ['中', 'zhōng', 'giữa'], ['上', 'shàng', 'trên']] },
+    { n: '撇', py: 'piě', vi: 'Nét phẩy', sym: '丿', desc: 'Kéo từ trên phải xuống dưới trái.', ex: [['八', 'bā', 'tám'], ['人', 'rén', 'người'], ['千', 'qiān', 'nghìn']] },
+    { n: '捺', py: 'nà', vi: 'Nét mác', sym: '㇏', desc: 'Kéo từ trên trái xuống dưới phải, cuối nét đè rồi vuốt ra.', ex: [['人', 'rén', 'người'], ['大', 'dà', 'to'], ['天', 'tiān', 'trời']] },
+    { n: '点', py: 'diǎn', vi: 'Nét chấm', sym: '丶', desc: 'Chấm ngắn, ấn xuống từ trên xuống dưới phải.', ex: [['六', 'liù', 'sáu'], ['小', 'xiǎo', 'nhỏ'], ['心', 'xīn', 'tim']] },
+    { n: '提', py: 'tí', vi: 'Nét hất', sym: '㇀', desc: 'Kéo từ dưới trái lên trên phải, nét ngắn.', ex: [['冷', 'lěng', 'lạnh'], ['我', 'wǒ', 'tôi'], ['打', 'dǎ', 'đánh']] },
+    { n: '横折', py: 'héngzhé', vi: 'Ngang gập', sym: '𠃍', desc: 'Viết ngang rồi gập xuống dưới thành một nét liền.', ex: [['口', 'kǒu', 'miệng'], ['日', 'rì', 'mặt trời'], ['国', 'guó', 'nước']] },
+    { n: '横折钩', py: 'héngzhégōu', vi: 'Ngang gập móc', sym: '乛', desc: 'Ngang, gập xuống, cuối nét móc lên trái.', ex: [['月', 'yuè', 'trăng'], ['有', 'yǒu', 'có'], ['同', 'tóng', 'cùng']] },
+    { n: '竖钩', py: 'shùgōu', vi: 'Sổ móc', sym: '亅', desc: 'Sổ thẳng xuống, cuối nét móc sang trái.', ex: [['小', 'xiǎo', 'nhỏ'], ['水', 'shuǐ', 'nước'], ['事', 'shì', 'việc']] },
+    { n: '竖折', py: 'shùzhé', vi: 'Sổ gập', sym: '㇄', desc: 'Sổ xuống rồi gập sang phải thành một nét liền.', ex: [['山', 'shān', 'núi'], ['出', 'chū', 'ra'], ['些', 'xiē', 'một số']] },
+    { n: '撇折', py: 'piězhé', vi: 'Phẩy gập', sym: '𠃋', desc: 'Phẩy xuống trái rồi gập sang phải.', ex: [['女', 'nǚ', 'nữ'], ['么', 'me', 'gì'], ['去', 'qù', 'đi']] },
+    { n: '斜钩', py: 'xiégōu', vi: 'Móc xiên', sym: '乚', desc: 'Kéo xiên cong xuống phải, cuối móc lên.', ex: [['我', 'wǒ', 'tôi'], ['找', 'zhǎo', 'tìm'], ['成', 'chéng', 'thành']] },
+  ],
+  rules: [
+    { t: 'Ngang trước, sổ sau (先横后竖)', ex: [['十', 'shí', 'mười'], ['干', 'gān', 'khô'], ['王', 'wáng', 'vua']], note: 'Khi nét ngang và nét sổ cắt nhau, viết nét ngang trước.' },
+    { t: 'Phẩy trước, mác sau (先撇后捺)', ex: [['人', 'rén', 'người'], ['八', 'bā', 'tám'], ['大', 'dà', 'to']], note: 'Phẩy bên trái viết trước, mác bên phải viết sau.' },
+    { t: 'Trên trước, dưới sau (从上到下)', ex: [['三', 'sān', 'ba'], ['字', 'zì', 'chữ'], ['要', 'yào', 'cần']], note: 'Viết các phần ở trên trước, rồi xuống dưới.' },
+    { t: 'Trái trước, phải sau (从左到右)', ex: [['川', 'chuān', 'sông'], ['你', 'nǐ', 'bạn'], ['明', 'míng', 'sáng']], note: 'Viết bên trái trước, rồi đến bên phải.' },
+    { t: 'Ngoài trước, trong sau (先外后内)', ex: [['月', 'yuè', 'trăng'], ['用', 'yòng', 'dùng'], ['同', 'tóng', 'cùng']], note: 'Khung bao ngoài (mở phía dưới) viết trước, rồi viết phần bên trong.' },
+    { t: 'Giữa trước, hai bên sau (先中间后两边)', ex: [['小', 'xiǎo', 'nhỏ'], ['水', 'shuǐ', 'nước'], ['办', 'bàn', 'làm']], note: 'Khi có nét giữa và hai nét hai bên, viết nét giữa trước.' },
+    { t: 'Vào nhà rồi mới đóng cửa (先进后关)', ex: [['国', 'guó', 'nước'], ['日', 'rì', 'ngày'], ['回', 'huí', 'về']], note: 'Khung kín: viết bao ngoài trái-trên-phải, rồi bên trong, cuối cùng đóng nét đáy.' },
+    { t: 'Sổ xuyên giữa viết sau cùng', ex: [['中', 'zhōng', 'giữa'], ['事', 'shì', 'việc'], ['平', 'píng', 'bằng']], note: 'Nét sổ xuyên suốt cả chữ thường viết sau cùng (trừ khi có quy tắc khác).' },
+    { t: 'Chấm viết sau cùng', ex: [['玉', 'yù', 'ngọc'], ['我', 'wǒ', 'tôi'], ['书', 'shū', 'sách']], note: 'Nét chấm trong chữ như 玉 viết sau cùng. Chấm ở trên hoặc bên trái thì viết trước.' },
+  ],
+  structures: [
+    { n: 'Chữ độc thể (独体字)', desc: 'Một khối, không tách được.', ex: [['人', 'rén', 'người'], ['日', 'rì', 'ngày'], ['木', 'mù', 'cây']] },
+    { n: 'Trái – phải (左右结构)', desc: 'Hai phần ngang nhau.', ex: [['你', 'nǐ', 'bạn'], ['明', 'míng', 'sáng'], ['好', 'hǎo', 'tốt']] },
+    { n: 'Trên – dưới (上下结构)', desc: 'Hai phần xếp dọc.', ex: [['字', 'zì', 'chữ'], ['花', 'huā', 'hoa'], ['想', 'xiǎng', 'nghĩ']] },
+    { n: 'Trái – giữa – phải', desc: 'Ba phần xếp ngang.', ex: [['做', 'zuò', 'làm'], ['湖', 'hú', 'hồ'], ['谢', 'xiè', 'cảm ơn']] },
+    { n: 'Bao nửa (半包围)', desc: 'Một phần bao quanh một phía hoặc hai phía.', ex: [['这', 'zhè', 'này'], ['店', 'diàn', 'tiệm'], ['同', 'tóng', 'cùng']] },
+    { n: 'Bao kín (全包围)', desc: 'Một khung bao toàn bộ.', ex: [['国', 'guó', 'nước'], ['回', 'huí', 'về'], ['园', 'yuán', 'vườn']] },
+  ],
+  liushu: [
+    { n: 'Tượng hình (象形)', desc: 'Vẽ lại hình sự vật.', ex: [['日', 'rì', 'mặt trời'], ['月', 'yuè', 'mặt trăng'], ['山', 'shān', 'núi'], ['水', 'shuǐ', 'nước']] },
+    { n: 'Chỉ sự (指事)', desc: 'Dùng ký hiệu để chỉ ý trừu tượng.', ex: [['一', 'yī', 'một'], ['上', 'shàng', 'trên'], ['下', 'xià', 'dưới'], ['本', 'běn', 'gốc']] },
+    { n: 'Hội ý (会意)', desc: 'Ghép hai chữ để tạo nghĩa mới.', ex: [['明', 'míng', 'sáng = 日 + 月'], ['好', 'hǎo', 'tốt = 女 + 子'], ['休', 'xiū', 'nghỉ = 亻 + 木'], ['林', 'lín', 'rừng = 木 + 木']] },
+    { n: 'Hình thanh (形声)', desc: 'Một phần chỉ nghĩa (bộ thủ), một phần chỉ âm. Chiếm hơn 80% chữ Hán.', ex: [['妈', 'mā', '女 (nghĩa) + 马 mǎ (âm)'], ['河', 'hé', '氵 (nghĩa) + 可 kě (âm)'], ['请', 'qǐng', '讠 (nghĩa) + 青 qīng (âm)'], ['吃', 'chī', '口 (nghĩa) + 乞 qǐ (âm)']] },
+  ],
+};
