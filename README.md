@@ -48,3 +48,6 @@ Trên máy tính, bấm đúp `Chay-tren-dien-thoai.bat` (hoặc chạy `node to
 
 ## Bản quyền và giấy phép
 Xem [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) và thư mục `licenses/`. Dự án dùng Hanzi Writer (MIT) và dữ liệu nét chữ theo Arphic Public License; "HSK" là nhãn hiệu của chủ sở hữu, dự án này độc lập và không được chứng nhận bởi họ. Nội dung bài học do tác giả biên soạn; hãy tự chọn giấy phép (ví dụ MIT hoặc CC BY-NC-SA) trước khi cho phép người khác tái sử dụng.
+
+## Đưa lên web (GitHub Pages) và dùng trên điện thoại, laptop
+Trang là web app tĩnh (PWA): đẩy lên GitHub Pages là mở được ở mọi thiết bị, không cần bật máy tính. Vào repo → Settings → Pages → Source: *Deploy from a branch* → Branch `main` / `(root)`. Địa chỉ: `https://<tên-github>.github.io/<tên-repo>/`. Mở trên điện thoại rồi chọn *Thêm vào Màn hình chính* (iPhone: Chia sẻ → Thêm vào Màn hình chính; Android: menu ⋮ → Cài đặt ứng dụng). Sau lần mở đầu, app chạy offline. Khi cập nhật nội dung, đổi `VERSION` trong `sw.js`. Thư mục `Voice chat/` cần máy chủ và API key nên không đưa lên GitHub.

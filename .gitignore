@@ -2,3 +2,5 @@ tools/node_modules/
 .claude/
 HanNgu-HSK1.html
 *.log
+Voice chat/
+.env
