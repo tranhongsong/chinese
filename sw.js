@@ -1,5 +1,5 @@
 /* Service worker: lưu sẵn toàn bộ trang để dùng offline. Đổi VERSION khi cập nhật nội dung. */
-const VERSION = 'hn-v4';
+const VERSION = 'hn-v5';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/style.css',
   'js/app.js', 'js/lecture.js',

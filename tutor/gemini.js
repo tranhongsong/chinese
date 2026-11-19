@@ -3,8 +3,8 @@
    tutorFetch() giả lập 3 đường /api/styles, /api/status, /api/chat của bản máy chủ cũ. */
 (function () {
   const KEY_NAME = 'xm.geminiKey';
-  const MODELS = ['gemini-4-hydrogen', 'gemini-3.5-flash-lite'];
-  const FIRST_TOKEN_MS = 9000;
+  const MODELS = ['gemini-3.5-flash-lite'];
+  const FIRST_TOKEN_MS = 15000;
   const cool = {}; // model -> thời điểm được thử lại
 
   const store = {
