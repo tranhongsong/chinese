@@ -99,6 +99,13 @@
   .v-item b { font-family: var(--hanzi); font-size: 1.1rem; min-width: 4.5em; }
   .v-item .py { min-width: 8em; }
   .v-empty { color: var(--muted); font-size: .9rem; }
+  #selBox { position: fixed; z-index: 60; max-width: min(340px, 92vw); background: var(--card); color: var(--ink); border: 2px solid var(--accent); border-radius: 12px; padding: 10px 14px; box-shadow: 0 8px 28px rgba(0,0,0,.28); }
+  #selBox[hidden] { display: none; }
+  #selBox .sb-row { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+  #selBox .sb-hz { font-family: var(--hanzi); font-size: 1.6rem; line-height: 1.2; word-break: break-all; }
+  #selBox .sb-py { color: var(--accent); font-weight: 600; margin-top: 2px; }
+  #selBox .sb-vi { margin-top: 4px; font-size: .95rem; }
+  #selBox .sb-x { color: var(--muted); }
 </style>
 </head>
 <body>
@@ -149,6 +156,7 @@
   </section>
 </main>
 
+<script src="../data/lessons.js"></script>
 <script src="persona.js"></script>
 <script src="gemini.js"></script>
 <script>
@@ -783,6 +791,64 @@
     sub.textContent = s.chosen ? `${baseSub} · ${s.chosen}${t}` : baseSub;
     sub.title = (s.results || []).map((x) => `${x.model}: ${x.avgMs ? (x.avgMs / 1000).toFixed(1) + "s" : "lỗi"}`).join("\n");
   }).catch(() => { sub.textContent = baseSub; });
+
+  // ---------- Bôi đen chữ Hán: hiện pinyin, nghĩa và đọc mẫu ----------
+  const ZH_RE = /[㐀-鿿]/g;
+  const zhOnly = (s) => (String(s).match(ZH_RE) || []).join("");
+  const LEX = new Map();
+  (window.LESSONS || []).forEach((L) => {
+    (L.vocab || []).forEach((w) => { const k = zhOnly(w.h); if (k && w.p && !LEX.has(k)) LEX.set(k, { py: w.p, vi: w.v || "" }); });
+    (L.dialogues || []).forEach((d) => d.lines.forEach((ln) => { const k = zhOnly(ln.h); if (k && ln.p && !LEX.has(k)) LEX.set(k, { py: ln.p, vi: ln.v || "" }); }));
+  });
+  const selBox = document.createElement("div");
+  selBox.id = "selBox"; selBox.hidden = true;
+  document.body.appendChild(selBox);
+  let selToken = 0, selTimer = 0, lastSel = "";
+  const hideSel = () => { selBox.hidden = true; lastSel = ""; };
+  const escH = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  function placeSel(rect) {
+    const w = selBox.offsetWidth, hh = selBox.offsetHeight;
+    const x = Math.min(Math.max(8, rect.left + rect.width / 2 - w / 2), window.innerWidth - w - 8);
+    let y = rect.bottom + 10;
+    if (y + hh > window.innerHeight - 8) y = Math.max(8, rect.top - hh - 10);
+    selBox.style.left = x + "px"; selBox.style.top = y + "px";
+  }
+  function checkSelection() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) { hideSel(); return; }
+    if (selBox.contains(sel.anchorNode)) return;
+    const node = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
+    if (node && node.closest("input,textarea,select")) { hideSel(); return; }
+    const text = sel.toString().trim(), key = zhOnly(text);
+    if (!key || key.length > 60) { hideSel(); return; }
+    if (text === lastSel) return;
+    lastSel = text;
+    const bubble = node && node.closest(".msg, .bubble, .line, [class*=bubble]");
+    const context = bubble ? zhOnly(bubble.textContent).slice(0, 120) : "";
+    const rect = sel.getRangeAt(0).getBoundingClientRect();
+    const token = ++selToken;
+    const draw = (py, vi, note) => {
+      if (token !== selToken) return;
+      selBox.innerHTML = '<div class="sb-row"><span class="sb-hz">' + escH(text.length > 30 ? text.slice(0, 30) + "…" : text) +
+        '</span><button class="ico" id="sbSay" title="Nghe phát âm" aria-label="Nghe">🔊</button></div>' +
+        '<div class="sb-py">' + (py ? escH(py) : '<span class="sb-x">…</span>') + '</div>' +
+        '<div class="sb-vi">' + (vi ? escH(vi) : '<span class="sb-x">' + escH(note || "") + '</span>') + '</div>';
+      $("sbSay").onmousedown = (e) => e.preventDefault();
+      $("sbSay").onclick = () => replay(key, false);
+      selBox.hidden = false;
+      placeSel(rect);
+    };
+    const hit = LEX.get(key);
+    if (hit) draw(hit.py, hit.vi);
+    else {
+      draw("", "", "Đang tra…");
+      TutorAPI.lookup(text, context).then((r) => draw(r.py, r.vi, "Chưa có nghĩa"), (e) => draw("", "", e.message));
+    }
+    replay(key, false);
+  }
+  document.addEventListener("selectionchange", () => { clearTimeout(selTimer); selTimer = setTimeout(checkSelection, 350); });
+  document.addEventListener("mousedown", (e) => { if (!selBox.contains(e.target)) hideSel(); });
+  log.addEventListener("scroll", hideSel, { passive: true });
 
   $("keyBtn").onclick = () => TutorAPI.askKey(true);
   window.addEventListener("beforeunload", () => cancelSpeech());

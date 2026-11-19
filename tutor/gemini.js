@@ -155,5 +155,32 @@
     return Promise.reject(new Error('Đường dẫn không hỗ trợ: ' + url));
   };
 
-  window.TutorAPI = { askKey };
+  /* Tra nhanh một từ/cụm chữ Hán: trả về { py, vi }. context = câu chứa từ đó, giúp chọn nghĩa đúng. */
+  const lookCache = {};
+  async function lookup(text, context) {
+    const ck = text + '|' + (context || '');
+    if (lookCache[ck]) return lookCache[ck];
+    const key = store.get(KEY_NAME);
+    if (!key) throw new Error('Chưa có khoá API (bấm 🔑 Khoá API).');
+    const prompt = 'Chữ Hán: ' + text + (context ? '\nTrong câu: ' + context : '') +
+      '\nTrả về JSON {"py": pinyin có dấu thanh, các âm tiết cách nhau bằng dấu cách, "vi": nghĩa tiếng Việt ngắn gọn (nếu có thể kèm âm Hán Việt)} cho đúng phần chữ Hán đã chọn.';
+    let lastErr;
+    for (const model of MODELS) {
+      try {
+        const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', {
+          method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 300, temperature: 0.2, responseMimeType: 'application/json' } }),
+          signal: AbortSignal.timeout(12000) });
+        const d = await r.json();
+        if (!r.ok) throw new Error((d.error && d.error.message) || ('Lỗi API ' + r.status));
+        const t = (d.candidates[0].content.parts || []).map((p) => p.text || '').join('');
+        const o = JSON.parse(t.replace(/^[^{]*|[^}]*$/g, ''));
+        return (lookCache[ck] = { py: String(o.py || ''), vi: String(o.vi || '') });
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error('Không tra được');
+  }
+
+  window.TutorAPI = { askKey, lookup };
 })();
