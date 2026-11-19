@@ -51,3 +51,6 @@ Xem [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) và thư mục `licenses/`.
 
 ## Đưa lên web (GitHub Pages) và dùng trên điện thoại, laptop
 Trang là web app tĩnh (PWA): đẩy lên GitHub Pages là mở được ở mọi thiết bị, không cần bật máy tính. Vào repo → Settings → Pages → Source: *Deploy from a branch* → Branch `main` / `(root)`. Địa chỉ: `https://<tên-github>.github.io/<tên-repo>/`. Mở trên điện thoại rồi chọn *Thêm vào Màn hình chính* (iPhone: Chia sẻ → Thêm vào Màn hình chính; Android: menu ⋮ → Cài đặt ứng dụng). Sau lần mở đầu, app chạy offline. Khi cập nhật nội dung, đổi `VERSION` trong `sw.js`. Thư mục `Voice chat/` cần máy chủ và API key nên không đưa lên GitHub.
+
+## Trò chuyện với cô Tiểu Quả (tutor/)
+Gia sư nói tiếng Trung bằng giọng nói, đã tích hợp vào web app (menu: *Trò chuyện với cô Tiểu Quả*). Trang gọi Gemini trực tiếp từ trình duyệt nên chạy được trên GitHub Pages, không cần máy chủ. Lần đầu bấm **🔑 Khoá API** và dán khoá Gemini miễn phí lấy tại https://aistudio.google.com/apikey. Khoá chỉ lưu trong trình duyệt của từng thiết bị (không nằm trong code, không lên GitHub), nên mỗi máy nhập một lần. Bản máy chủ cũ vẫn ở `Voice chat/` (không đưa lên GitHub).

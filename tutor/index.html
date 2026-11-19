@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#c0392b">
+<link rel="icon" href="../icons/icon-192.png">
+<title>Trò chuyện với Tiểu Quả 小果</title>
+<style>
+  :root {
+    --bg: #f7f3ee; --card: #ffffff; --ink: #231f20; --muted: #6f6a66; --line: #e6dfd8;
+    --accent: #c0392b; --accent-ink: #ffffff; --me: #efe9e3; --tutor: #fdecea;
+    --listen: #2e8b57; --think: #b8860b; --gold: #b8860b;
+    --hanzi: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Heiti SC", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17130f; --card: #211c17; --ink: #f2ece5; --muted: #a59b90; --line: #352e27;
+      --accent: #e8604f; --accent-ink: #1a1210; --me: #2b251e; --tutor: #3a1f1b;
+      --listen: #4fb67c; --think: #e0b04a; --gold: #e0b04a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    min-height: 100vh; display: flex; justify-content: center; padding: 0 16px;
+  }
+  main { width: 100%; max-width: 720px; display: flex; flex-direction: column; min-height: 100vh; padding: 20px 0; }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  h1 { font-size: 1.25rem; margin: 0; font-weight: 650; }
+  h1 .zh { font-family: var(--hanzi); color: var(--accent); }
+  .sub { color: var(--muted); font-size: .9rem; }
+  #log { flex: 1; overflow-y: auto; margin: 16px 0; padding: 4px 2px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 88%; padding: 10px 14px; border-radius: 16px; word-wrap: break-word; }
+  .msg small { display: block; color: var(--muted); font-size: .75rem; margin-bottom: 2px; }
+  .me { align-self: flex-end; background: var(--me); border-bottom-right-radius: 4px; white-space: pre-wrap; font-family: var(--hanzi), system-ui; }
+  .tutor { align-self: flex-start; background: var(--tutor); border-bottom-left-radius: 4px; }
+  .interim { opacity: .55; }
+  .note { align-self: center; color: var(--muted); font-size: .85rem; text-align: center; }
+  .err { align-self: center; color: #b3261e; font-size: .9rem; text-align: center; }
+  @media (prefers-color-scheme: dark) { .err { color: #ff8a80; } }
+
+  /* one Chinese sentence: hanzi, pinyin, Vietnamese meaning, replay buttons */
+  .zh-line { display: grid; grid-template-columns: 1fr auto; gap: 0 8px; align-items: start; padding: 4px 0; }
+  .zh-line + .zh-line, .vi-line + .zh-line, .zh-line + .vi-line { border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 8px; }
+  .hanzi { font-family: var(--hanzi); font-size: 1.5rem; line-height: 1.35; font-weight: 500; }
+  .py { color: var(--accent); font-size: .95rem; }
+  .mean { color: var(--muted); font-size: .9rem; font-style: italic; }
+  .zh-btns { display: flex; gap: 4px; }
+  .ico { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 8px; width: 34px; height: 30px; cursor: pointer; font-size: .95rem; }
+  .ico:hover { border-color: var(--accent); }
+  .vi-line { padding: 4px 0; }
+  .vi-line .br { color: var(--accent); font-size: .9em; }
+  .vi-line .han { font-family: var(--hanzi); font-size: 1.1em; font-weight: 500; }
+  .new-line { margin-top: 8px; display: inline-flex; align-items: baseline; gap: 8px; flex-wrap: wrap; background: var(--card); border: 1px solid var(--gold); border-radius: 10px; padding: 3px 10px; font-size: .9rem; }
+  .new-line b { font-family: var(--hanzi); font-size: 1.1rem; }
+  .new-line .tag { color: var(--gold); font-size: .72rem; font-weight: 700; letter-spacing: .04em; }
+  .partial { color: var(--muted); font-size: .9rem; }
+  body.nopy .py { display: none; }
+  body.nomean .mean { display: none; }
+
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+  .stage { display: flex; align-items: center; gap: 16px; }
+  #mic {
+    width: 76px; height: 76px; border-radius: 50%; border: 0; cursor: pointer; flex: none;
+    background: var(--accent); color: var(--accent-ink); font-size: 30px; line-height: 1;
+    transition: transform .15s, box-shadow .15s;
+  }
+  #mic:hover { transform: scale(1.04); }
+  #mic:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  #mic.listening { background: var(--listen); animation: pulse 1.4s infinite; }
+  #mic.thinking { background: var(--think); }
+  #mic.speaking { background: var(--accent); }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46,139,87,.5);} 70% { box-shadow: 0 0 0 18px rgba(46,139,87,0);} 100% { box-shadow: 0 0 0 0 rgba(46,139,87,0);} }
+  @media (prefers-reduced-motion: reduce) { #mic.listening { animation: none; } }
+  #status { font-weight: 600; }
+  #hint { color: var(--muted); font-size: .9rem; }
+  .row { display: flex; gap: 8px; margin-top: 14px; }
+  input[type=text] {
+    flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--ink); font: inherit;
+  }
+  button.small, select {
+    padding: 9px 14px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--card); color: var(--ink); font: inherit; cursor: pointer;
+  }
+  button.small:hover { border-color: var(--accent); }
+  .opts { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; margin-top: 12px; color: var(--muted); font-size: .85rem; }
+  .opts label { display: flex; align-items: center; gap: 6px; }
+  select { max-width: 210px; font-size: .85rem; padding: 6px 8px; }
+  input[type=range] { width: 100px; accent-color: var(--accent); }
+  input[type=checkbox] { accent-color: var(--accent); }
+
+  #vocabBox { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; display: none; }
+  #vocabBox.open { display: block; }
+  #vocabList { display: grid; gap: 6px; max-height: 220px; overflow-y: auto; margin: 8px 0; }
+  .v-item { display: flex; align-items: center; gap: 8px; font-size: .92rem; }
+  .v-item b { font-family: var(--hanzi); font-size: 1.1rem; min-width: 4.5em; }
+  .v-item .py { min-width: 8em; }
+  .v-empty { color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <a href="../index.html" style="font-size:14px;color:inherit;text-decoration:none;margin-right:8px" aria-label="Về trang bài học">←</a>
+    <h1>Trò chuyện với Tiểu Quả <span class="zh">小果</span></h1>
+    <span class="sub">Luyện nói tiếng Trung</span>
+  </header>
+
+  <div id="log" role="log" aria-live="polite"></div>
+
+  <section class="panel">
+    <div class="stage">
+      <button id="mic" aria-label="Bắt đầu trò chuyện">🎙</button>
+      <div>
+        <div id="status">Sẵn sàng</div>
+        <div id="hint">Bấm micro để chào cô Tiểu Quả nhé. 你好！</div>
+      </div>
+    </div>
+    <form class="row" id="textForm" autocomplete="off">
+      <input type="text" id="textIn" placeholder="Hoặc gõ ở đây: chữ Hán, pinyin hay tiếng Việt đều được…" aria-label="Gõ tin nhắn">
+      <button class="small" type="submit">Gửi</button>
+    </form>
+    <div class="opts">
+      <label>Trình độ <select id="levelSel" aria-label="Trình độ HSK"></select></label>
+      <label>Phong cách <select id="styleSel" aria-label="Phong cách trò chuyện"><option value="random">Ngẫu nhiên · Surprise me</option></select></label>
+      <label>Giọng <select id="voiceSel" aria-label="Giọng tiếng Trung"></select></label>
+      <label>Tốc độ <input type="range" id="rate" min="0.5" max="1.2" step="0.05" value="0.85"></label>
+      <label title="Bạn im lặng bao lâu thì cô bắt đầu trả lời">Chờ <input type="range" id="pause" min="1" max="6" step="0.5" value="2.5"><span id="pauseVal">2.5s</span></label>
+      <label id="langLabel">Ngôn ngữ mic
+        <select id="lang" aria-label="Ngôn ngữ nhận dạng giọng nói">
+          <option value="zh-CN">中文 (普通话)</option>
+          <option value="zh-TW">中文 (台灣)</option>
+          <option value="vi-VN">Tiếng Việt</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="showPy" checked> Pinyin</label>
+      <label><input type="checkbox" id="showMean" checked> Nghĩa Việt</label>
+      <button class="small" id="vocabBtn" type="button">📒 Sổ từ vựng (<span id="vocabCount">0</span>)</button>
+      <button class="small" id="keyBtn" type="button">🔑 Khoá API</button>
+      <button class="small" id="stop" type="button">Kết thúc</button>
+    </div>
+    <div id="vocabBox">
+      <div id="vocabList"></div>
+      <button class="small" id="vocabClear" type="button">Xoá sổ từ vựng</button>
+    </div>
+  </section>
+</main>
+
+<script src="persona.js"></script>
+<script src="gemini.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const log = $("log"), mic = $("mic"), statusEl = $("status"), hint = $("hint");
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const synth = window.speechSynthesis;
+  const store = {
+    get: (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  };
+
+  let history = [];
+  // Every new chat gets a fresh random seed, so the server picks a different style and topic ideas each time.
+  let sessionSeed = Math.floor(Math.random() * 2147483647);
+  let noteShown = false;
+  const newSession = () => { sessionSeed = Math.floor(Math.random() * 2147483647); noteShown = false; };
+  let audioMode = false;    // true with Gemini: we record your voice and Gemini listens (Chinese + Vietnamese mixed)
+  let active = false;       // conversation running
+  let state = "idle";       // idle | listening | thinking | speaking
+  let rec = null;
+  let interimEl = null;
+  let replaying = false;    // a replay button is playing: ignore the mic so it doesn't hear the speakers
+
+  function setState(s, text, h) {
+    state = s;
+    mic.className = s === "idle" ? "" : s;
+    statusEl.textContent = text;
+    hint.textContent = h || "";
+  }
+
+  function addMsg(who, text, cls) {
+    const d = document.createElement("div");
+    d.className = "msg " + cls;
+    const s = document.createElement("small");
+    s.textContent = who;
+    d.appendChild(s);
+    d.appendChild(document.createTextNode(text));
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+    return d;
+  }
+  function addErr(text) {
+    const d = document.createElement("div");
+    d.className = "err";
+    d.textContent = text;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // ---------- Display toggles ----------
+  const applyToggles = () => {
+    document.body.classList.toggle("nopy", !$("showPy").checked);
+    document.body.classList.toggle("nomean", !$("showMean").checked);
+  };
+  $("showPy").checked = store.get("xm.py", "1") === "1";
+  $("showMean").checked = store.get("xm.mean", "1") === "1";
+  $("showPy").onchange = () => { store.set("xm.py", $("showPy").checked ? "1" : "0"); applyToggles(); };
+  $("showMean").onchange = () => { store.set("xm.mean", $("showMean").checked ? "1" : "0"); applyToggles(); };
+  applyToggles();
+
+  // ---------- Voices ----------
+  const voiceSel = $("voiceSel");
+  let voices = [];
+  function loadVoices() {
+    voices = synth.getVoices();
+    const zh = voices.filter((v) => /^zh[-_]/i.test(v.lang) || /cmn|chinese|mandarin/i.test(v.name));
+    const prefer = (v) => {
+      const n = v.name;
+      let score = 0;
+      if (/natural|online/i.test(n)) score += 4;
+      if (/xiaoxiao|xiaoyi|xiaohan|xiaomo|xiaoxuan|hsiaochen|hsiaoyu|huihui|tingting|yaoyao|female/i.test(n)) score += 3;
+      if (/google.*(普通话|mandarin|chinese)/i.test(n)) score += 2;
+      if (/zh[-_]CN/i.test(v.lang)) score += 2;
+      if (/yunxi|yunyang|yunjian|kangkang|yunfeng|yunhao|zhiwei|male/i.test(n) && !/female/i.test(n)) score -= 3;
+      return score;
+    };
+    zh.sort((a, b) => prefer(b) - prefer(a));
+    const saved = store.get("xm.voice", "");
+    voiceSel.innerHTML = "";
+    zh.forEach((v) => {
+      const o = document.createElement("option");
+      o.value = v.name; o.textContent = v.name;
+      voiceSel.appendChild(o);
+    });
+    if (!zh.length) {
+      const o = document.createElement("option");
+      o.textContent = "(máy chưa có giọng tiếng Trung)";
+      voiceSel.appendChild(o);
+    }
+    if (saved && zh.some((v) => v.name === saved)) voiceSel.value = saved;
+  }
+  loadVoices();
+  synth.onvoiceschanged = loadVoices;
+  voiceSel.onchange = () => store.set("xm.voice", voiceSel.value);
+  $("rate").value = store.get("xm.rate", "0.85");
+  $("rate").onchange = (e) => store.set("xm.rate", e.target.value);
+  $("lang").value = store.get("xm.lang", "zh-CN");
+  $("lang").onchange = (e) => store.set("xm.lang", e.target.value);
+
+  // Level + conversation style: "Ngẫu nhiên" = random each chat, or pick one.
+  const styleSel = $("styleSel"), levelSel = $("levelSel");
+  tutorFetch("/api/styles").then((r) => r.json()).then(({ styles, levels, audioInput }) => {
+    // Gemini hears Chinese and Vietnamese mixed, so we record your voice instead of using one-language browser recognition.
+    audioMode = !!(audioInput && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (window.AudioContext || window.webkitAudioContext));
+    if (audioMode) {
+      $("langLabel").style.display = "none";
+      hint.textContent = "Bấm micro rồi nói tiếng Trung, tiếng Việt hoặc trộn cả hai. Cô hiểu hết nhưng chỉ đáp bằng tiếng Trung.";
+    }
+    (levels || []).forEach((l) => {
+      const o = document.createElement("option");
+      o.value = l.id; o.textContent = l.label;
+      levelSel.appendChild(o);
+    });
+    levelSel.value = store.get("xm.level", "hsk2");
+    if (!levelSel.value) levelSel.value = "hsk2";
+    styles.forEach((s) => {
+      const o = document.createElement("option");
+      o.value = s.id; o.textContent = s.label;
+      styleSel.appendChild(o);
+    });
+    styleSel.value = store.get("xm.style", "random");
+    if (!styleSel.value) styleSel.value = "random";
+  }).catch(() => {});
+  styleSel.onchange = () => store.set("xm.style", styleSel.value);
+  levelSel.onchange = () => store.set("xm.level", levelSel.value);
+
+  // ---------- Speaking ----------
+  // Each finished line is queued. Chinese is read by the Chinese voice, Vietnamese by the Vietnamese voice.
+  // cancelSpeech() invalidates everything queued so far.
+  let speakGen = 0;
+  let currentAsk = null;   // AbortController of the reply that is still streaming
+  let askSeq = 0;          // lets an older, interrupted reply notice it has been replaced
+  function cancelSpeech() { speakGen++; synth.cancel(); }
+  const HAN_RUN = /([㐀-鿿　-〿＀-￯]+)/;
+  const hasHan = (t) => /[㐀-鿿]/.test(t);
+  function pickVoice(lang) {
+    if (lang === "vi") {
+      const vi = voices.filter((x) => /^vi/i.test(x.lang));
+      return vi.find((x) => /hoaimy|hoai|linh|female/i.test(x.name)) || vi.find((x) => !/namminh|nam minh|male/i.test(x.name)) || vi[0] || null;
+    }
+    return voices.find((x) => x.name === voiceSel.value) || voices.find((x) => /^zh[-_]CN/i.test(x.lang)) || null;
+  }
+  function speakPiece(text, gen, lang, mul) {
+    return new Promise((resolve) => {
+      if (gen !== speakGen || !/\p{L}|\p{N}/u.test(text)) return resolve();
+      const u = new SpeechSynthesisUtterance(text);
+      const v = pickVoice(lang);
+      u.lang = lang === "vi" ? "vi-VN" : "zh-CN";
+      if (v) { u.voice = v; u.lang = v.lang; }
+      u.rate = Math.max(0.4, Math.min(1.5, Number($("rate").value) * (mul || 1) * (lang === "vi" ? 1.1 : 1)));
+      u.onend = resolve;
+      u.onerror = resolve;
+      synth.speak(u);
+    });
+  }
+  // Split a Vietnamese line into Chinese runs and Vietnamese runs so each gets the right voice.
+  function speakMixed(text, gen, mul) {
+    const parts = text
+      .replace(/\[[^\]]*\]/g, " ")        // pinyin in [brackets] is only shown, never read aloud
+      .replace(/[*_`#"“”]/g, "")           // markdown marks and quotes
+      .split(HAN_RUN)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    return parts.reduce((p, part) => p.then(() => speakPiece(part, gen, hasHan(part) ? "zh" : "vi", mul)), Promise.resolve());
+  }
+  function speakLine(p, gen) {
+    if (p.type === "zh") return speakPiece(p.zh.replace(/[*_`#]/g, ""), gen, "zh", 1);
+    if (p.type === "vi") return speakMixed(p.text, gen, 1);
+    return Promise.resolve();
+  }
+  function replay(zh, slow) {
+    cancelSpeech();
+    const gen = speakGen;
+    replaying = true;
+    speakPiece(zh, gen, "zh", slow ? 0.6 : 1).then(() => { if (gen === speakGen) replaying = false; });
+  }
+
+  // ---------- Parsing the tutor's line format ----------
+  // [ZH] 汉字 || pinyin || nghĩa      [VI] tiếng Việt (pinyin trong [ngoặc vuông])      [NEW] từ || pinyin || nghĩa
+  function parseLine(raw) {
+    const line = raw.replace(/[*`#]/g, "").trim();
+    if (!line) return null;
+    let m;
+    if ((m = line.match(/^\[ZH\]\s*(.*)$/i))) {
+      const [zh, py, vi] = m[1].split("||").map((s) => s.trim());
+      return { type: "zh", zh: zh || "", py: py || "", vi: vi || "" };
+    }
+    if ((m = line.match(/^\[NEW\]\s*(.*)$/i))) {
+      const [zh, py, vi] = m[1].split("||").map((s) => s.trim());
+      return { type: "new", zh: zh || "", py: py || "", vi: vi || "" };
+    }
+    if ((m = line.match(/^\[VI\]\s*(.*)$/i))) return { type: "vi", text: m[1] };
+    return { type: "vi", text: line };   // untagged line: treat it as mixed text
+  }
+
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  function renderParsed(bubble, p) {
+    if (p.type === "zh") {
+      const row = el("div", "zh-line");
+      const left = el("div");
+      left.appendChild(el("div", "hanzi", p.zh));
+      if (p.py) left.appendChild(el("div", "py", p.py));
+      if (p.vi) left.appendChild(el("div", "mean", p.vi));
+      const btns = el("div", "zh-btns");
+      const b1 = el("button", "ico", "🔊"); b1.type = "button"; b1.title = "Nghe lại"; b1.setAttribute("aria-label", "Nghe lại");
+      const b2 = el("button", "ico", "🐢"); b2.type = "button"; b2.title = "Nghe chậm"; b2.setAttribute("aria-label", "Nghe chậm");
+      b1.onclick = () => replay(p.zh, false);
+      b2.onclick = () => replay(p.zh, true);
+      btns.append(b1, b2);
+      row.append(left, btns);
+      bubble.appendChild(row);
+    } else if (p.type === "vi") {
+      const d = el("div", "vi-line");
+      // show Chinese characters bigger and [pinyin] in the accent colour
+      p.text.split(/(\[[^\]]*\])/).forEach((seg) => {
+        if (/^\[[^\]]*\]$/.test(seg)) d.appendChild(el("span", "br", seg));
+        else seg.split(HAN_RUN).forEach((s) => { if (s) d.appendChild(hasHan(s) ? el("span", "han", s) : document.createTextNode(s)); });
+      });
+      bubble.appendChild(d);
+    } else if (p.type === "new") {
+      if (!p.zh) return;
+      const d = el("div", "new-line");
+      d.append(el("span", "tag", "TỪ MỚI"), el("b", null, p.zh), el("span", "py", p.py), el("span", "mean", p.vi));
+      bubble.appendChild(d);
+      saveWord(p);
+    }
+  }
+
+  // ---------- Vocabulary notebook ----------
+  let vocab = [];
+  try { vocab = JSON.parse(store.get("xm.vocab", "[]")) || []; } catch { vocab = []; }
+  function saveWord(p) {
+    if (vocab.some((w) => w.zh === p.zh)) return;
+    vocab.unshift({ zh: p.zh, py: p.py, vi: p.vi });
+    vocab = vocab.slice(0, 300);
+    store.set("xm.vocab", JSON.stringify(vocab));
+    renderVocab();
+  }
+  function renderVocab() {
+    $("vocabCount").textContent = vocab.length;
+    const box = $("vocabList");
+    box.innerHTML = "";
+    if (!vocab.length) { box.appendChild(el("div", "v-empty", "Chưa có từ nào. Từ mới cô dạy sẽ tự động được lưu ở đây.")); return; }
+    vocab.forEach((w) => {
+      const r = el("div", "v-item");
+      const b = el("button", "ico", "🔊"); b.type = "button"; b.onclick = () => replay(w.zh, false);
+      r.append(b, el("b", null, w.zh), el("span", "py", w.py), el("span", "mean", w.vi));
+      box.appendChild(r);
+    });
+  }
+  $("vocabBtn").onclick = () => $("vocabBox").classList.toggle("open");
+  $("vocabClear").onclick = () => { if (confirm("Xoá toàn bộ sổ từ vựng?")) { vocab = []; store.set("xm.vocab", "[]"); renderVocab(); } };
+  renderVocab();
+
+  // ---------- Talking to Tiểu Quả ----------
+  // The server streams the reply as lines of JSON ({"t":"text"} ... {"done":true}). We cut the text into lines,
+  // show each finished line as soon as it is complete, and start speaking at once instead of waiting for all of it.
+  // `audio` (Gemini mode): your recorded voice. Gemini hears it, and its reply starts with "[heard: ...]" so we
+  // can show and remember what you said, in whatever mix of Vietnamese and Chinese you used.
+  async function ask(userText, shownText, audio) {
+    if (shownText) addMsg("Bạn", shownText, "me");
+    const youBubble = audio ? addMsg("Bạn", "…", "me interim") : null;
+    const userItem = { role: "user", content: audio ? "(voice message)" : userText };
+    history.push(userItem);
+    setState("thinking", "Cô Tiểu Quả đang nghĩ…", "");
+    cancelSpeech();
+    replaying = false;
+    const gen = speakGen, myId = ++askSeq;
+    const ac = new AbortController();
+    currentAsk = ac;
+    let full = "", pending = "", bubble = null, partial = null, spoke = false, chain = Promise.resolve(), failure = null;
+    let heardBuf = audio ? "" : null;   // collects the "[heard: ...]" header until it is complete
+    const gotHeard = (heard) => {
+      userItem.content = heard || "(voice message)";
+      youBubble.lastChild.textContent = userItem.content;
+      youBubble.className = "msg me";
+    };
+    const ensureBubble = () => {
+      if (!bubble) { bubble = addMsg("Tiểu Quả 小果", "", "tutor"); }
+      return bubble;
+    };
+    // one finished line: draw it and speak it
+    const emitLine = (raw) => {
+      const p = parseLine(raw);
+      if (!p) return;
+      if (partial) { partial.remove(); partial = null; }
+      renderParsed(ensureBubble(), p);
+      log.scrollTop = log.scrollHeight;
+      if (!active) return;
+      if (p.type === "new") return;
+      if (!spoke) { spoke = true; setState("speaking", "Cô Tiểu Quả đang nói…", "Bấm micro để ngắt lời và nói."); }
+      chain = chain.then(() => speakLine(p, gen));
+    };
+    const showPartial = () => {
+      const t = pending.replace(/^\[(ZH|VI|NEW)\]\s*/i, "").replace(/\|\|.*$/, "").trim();
+      if (!t) return;
+      if (!partial) { partial = el("div", "partial"); ensureBubble().appendChild(partial); }
+      partial.textContent = t + " …";
+      log.scrollTop = log.scrollHeight;
+    };
+
+    try {
+      const r = await tutorFetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history, style: styleSel.value, level: levelSel.value, seed: sessionSeed, audio }),
+        signal: ac.signal,
+      });
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        throw new Error(data.error || "Yêu cầu thất bại");
+      }
+      const reader = r.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let nl;
+        while ((nl = buf.indexOf("\n")) >= 0) {
+          const line = buf.slice(0, nl).trim();
+          buf = buf.slice(nl + 1);
+          if (!line) continue;
+          const j = JSON.parse(line);
+          if (j.error) throw new Error(j.error);
+          if (j.meta) {
+            if (!noteShown) {
+              noteShown = true;
+              const d = document.createElement("div");
+              d.className = "note";
+              d.textContent = "Hôm nay: " + j.meta.level + " · " + j.meta.style;
+              log.appendChild(d);
+            }
+            continue;
+          }
+          let piece = j.t;
+          if (!piece) continue;
+          if (heardBuf !== null) {
+            heardBuf += piece;
+            const head = heardBuf.trimStart();
+            if (head.length < 7 && "[heard:".startsWith(head.toLowerCase())) continue;   // still might be the header
+            if (!/^\[heard:/i.test(head)) { piece = heardBuf; heardBuf = null; }          // no header: all of it is the reply
+            else {
+              const end = head.indexOf("]");
+              if (end < 0 && head.length < 1500) continue;                                 // wait for the closing bracket
+              gotHeard(head.slice(7, end < 0 ? undefined : end).trim());
+              piece = end < 0 ? "" : head.slice(end + 1);
+              heardBuf = null;
+              if (!piece.trim()) continue;
+            }
+          }
+          full += piece;
+          pending += piece;
+          // every complete line is shown and spoken right away; the unfinished tail is shown dimmed
+          let k;
+          while ((k = pending.indexOf("\n")) >= 0) {
+            emitLine(pending.slice(0, k));
+            pending = pending.slice(k + 1);
+          }
+          if (pending.trim()) showPartial();
+        }
+      }
+      if (heardBuf) { full += heardBuf; pending += heardBuf; heardBuf = null; }   // stream ended mid-header: treat as reply
+      if (pending.trim()) emitLine(pending);
+      pending = "";
+    } catch (e) {
+      if (e.name !== "AbortError") failure = e;   // AbortError = you interrupted her; not a real error
+    }
+    if (partial) { partial.remove(); partial = null; }
+    if (youBubble && youBubble.className.includes("interim")) gotHeard("");   // never got a transcript
+    if (currentAsk === ac) currentAsk = null;
+    if (myId !== askSeq) return;   // a newer message replaced this one; let that one carry on
+
+    full = full.trim();
+    if (full) history.push({ role: "assistant", content: full });   // keep the raw tagged text so the format stays consistent
+    else history.pop();
+    if (failure) addErr(failure.message);
+    await chain;
+    if (active) listen();
+    else setState("idle", "Sẵn sàng", "Bấm micro để nói chuyện với cô Tiểu Quả.");
+  }
+
+  // ---------- Listening ----------
+  // Pause wait: how long you must stay silent before she takes her turn.
+  const pauseEl = $("pause"), pauseVal = $("pauseVal");
+  pauseEl.value = store.get("xm.pause", "2.5");
+  const showPause = () => { pauseVal.textContent = Number(pauseEl.value).toFixed(1) + "s"; };
+  showPause();
+  pauseEl.oninput = () => { showPause(); store.set("xm.pause", pauseEl.value); };
+
+  let sendNow = null;   // set while listening: ends your turn right away if you've said something
+
+  // With Gemini we record your voice (listenAudio) so you can mix Vietnamese and Chinese freely.
+  // Without it we fall back to the browser's one-language speech recognition (listenSR).
+  function listen() { return audioMode ? listenAudio() : listenSR(); }
+
+  function listenSR() {
+    if (!active) return;
+    if (!SR) { setState("idle", "Không có nhập giọng nói", "Dùng Edge hoặc Chrome, hoặc gõ ở dưới."); return; }
+    setState("listening", "Đang nghe…", "Cứ thong thả. Cô trả lời sau một lúc im lặng, hoặc bấm micro để gửi ngay.");
+    rec = new SR();
+    rec.lang = $("lang").value;
+    rec.interimResults = true;
+    rec.continuous = true;      // keep listening through pauses; we decide when the turn is over
+    rec.maxAlternatives = 1;
+    let finalText = "", interimText = "", confSum = 0, confN = 0, silenceTimer = null;
+
+    const hasText = () => (finalText + " " + interimText).trim().length > 0;
+    const finish = () => { clearTimeout(silenceTimer); sendNow = null; try { rec.stop(); } catch {} };
+    sendNow = () => { if (!hasText()) return false; finish(); return true; };
+
+    rec.onresult = (ev) => {
+      if (replaying) return;
+      let interim = "";
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const res = ev.results[i];
+        if (res.isFinal) {
+          finalText += (finalText ? " " : "") + res[0].transcript.trim();
+          if (res[0].confidence > 0) { confSum += res[0].confidence; confN++; }
+        } else interim += res[0].transcript;
+      }
+      interimText = interim.trim();
+      const shown = (finalText + " " + interimText).trim();
+      if (shown) {
+        if (!interimEl) interimEl = addMsg("Bạn", shown, "me interim");
+        else { interimEl.lastChild.textContent = shown; }
+        log.scrollTop = log.scrollHeight;
+        // Every new word restarts the countdown; she only answers once you've been quiet long enough.
+        clearTimeout(silenceTimer);
+        silenceTimer = setTimeout(finish, Number(pauseEl.value) * 1000);
+      }
+    };
+    rec.onerror = (ev) => {
+      if (ev.error === "not-allowed" || ev.error === "service-not-allowed") {
+        addErr("Micro đang bị chặn. Bấm biểu tượng ổ khoá trên thanh địa chỉ và cho phép micro.");
+        stopAll();
+      } else if (ev.error === "network") {
+        addErr("Nhận dạng giọng nói cần có kết nối Internet.");
+      }
+    };
+    rec.onend = () => {
+      clearTimeout(silenceTimer);
+      sendNow = null;
+      if (interimEl) { interimEl.remove(); interimEl = null; }
+      if (!active || state !== "listening") return;
+      const text = (finalText + " " + interimText).trim();
+      if (text) {
+        const conf = confN ? confSum / confN : 1;
+        let toSend = text;
+        if (conf < 0.75) toSend += ` [recognition confidence: ${conf.toFixed(2)}]`;
+        ask(toSend, text);
+      } else {
+        setTimeout(listen, 250);   // heard nothing: keep listening
+      }
+    };
+    try { rec.start(); } catch { setTimeout(listen, 400); }
+  }
+
+  // ---------- Listening with Gemini: record your voice, send it, Gemini understands Chinese + Vietnamese ----------
+  let micStream = null, audioCtx = null, procNode = null, capture = null;
+  let noiseFloor = 0.006;   // learned background noise level, used to tell your voice from silence
+
+  async function ensureMic() {
+    if (audioCtx && audioCtx.state !== "closed" && micStream && micStream.active) {
+      if (audioCtx.state === "suspended") await audioCtx.resume();
+      return;
+    }
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = audioCtx.createMediaStreamSource(micStream);
+    procNode = audioCtx.createScriptProcessor(4096, 1, 1);
+    procNode.onaudioprocess = onAudio;
+    const mute = audioCtx.createGain();     // keeps the graph running without playing your mic through the speakers
+    mute.gain.value = 0;
+    src.connect(procNode); procNode.connect(mute); mute.connect(audioCtx.destination);
+  }
+  function releaseMic() {
+    capture = null;
+    try { if (procNode) procNode.onaudioprocess = null; } catch {}
+    try { if (micStream) micStream.getTracks().forEach((t) => t.stop()); } catch {}
+    try { if (audioCtx) audioCtx.close(); } catch {}
+    micStream = audioCtx = procNode = null;
+  }
+
+  // Called for every ~90 ms of microphone audio while it is your turn.
+  function onAudio(ev) {
+    const t = capture;
+    if (!t || t.done || state !== "listening" || replaying) return;
+    const x = ev.inputBuffer.getChannelData(0);
+    let sum = 0;
+    for (let i = 0; i < x.length; i++) sum += x[i] * x[i];
+    const rms = Math.sqrt(sum / x.length);
+    const now = performance.now();
+    const chunk = new Float32Array(x);
+    const thr = Math.max(0.01, noiseFloor * 3);
+    if (!t.speaking) {
+      noiseFloor = noiseFloor * 0.95 + Math.min(rms, 0.05) * 0.05;
+      t.pre.push(chunk);                       // keep a little audio from just before you started
+      if (t.pre.length > 6) t.pre.shift();
+      t.loud = rms > thr ? t.loud + 1 : 0;
+      if (t.loud >= 2) {                       // two loud blocks in a row = you started talking
+        t.speaking = true; t.chunks = t.pre; t.pre = []; t.lastVoice = now; t.voicedBufs = 2;
+        setState("listening", "Đang nghe bạn nói…", "Cứ nói tiếp. Cô trả lời sau một lúc im lặng, hoặc bấm micro để gửi ngay.");
+      }
+      return;
+    }
+    t.chunks.push(chunk);
+    if (rms > thr) t.voicedBufs++;
+    if (rms > thr * 0.6) t.lastVoice = now;
+    const seconds = (t.chunks.length * chunk.length) / audioCtx.sampleRate;
+    if (now - t.lastVoice > Number(pauseEl.value) * 1000 || seconds > 45) finishTurn(t);
+  }
+
+  async function listenAudio() {
+    if (!active) return;
+    try { await ensureMic(); }
+    catch {
+      addErr("Micro đang bị chặn hoặc không có. Hãy cho phép micro cho trang này (ổ khoá trên thanh địa chỉ), hoặc gõ ở dưới.");
+      stopAll();
+      return;
+    }
+    if (!active) return;
+    setState("listening", "Đang nghe…", "Nói tiếng Trung, tiếng Việt hoặc trộn cả hai; cô hiểu hết nhưng chỉ đáp bằng tiếng Trung. Cô trả lời sau một lúc im lặng, hoặc bấm micro để gửi ngay.");
+    const t = { speaking: false, done: false, pre: [], chunks: [], loud: 0, voicedBufs: 0, lastVoice: 0 };
+    capture = t;
+    sendNow = () => { if (!t.speaking || t.done) return false; finishTurn(t); return true; };
+  }
+
+  async function finishTurn(t) {
+    t.done = true; capture = null; sendNow = null;
+    if (t.voicedBufs < 3) { listenAudio(); return; }          // just a click or a cough: keep listening
+    setState("thinking", "Cô Tiểu Quả đang nghĩ…", "");
+    const wav = encodeWav(t.chunks, audioCtx.sampleRate);
+    const data = await new Promise((resolve) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result).split(",")[1]);
+      fr.readAsDataURL(new Blob([wav], { type: "audio/wav" }));
+    });
+    if (!active) return;
+    ask(null, null, { mime: "audio/wav", data });
+  }
+
+  // 16 kHz, 16-bit, mono WAV: small to upload and exactly what speech models like.
+  function encodeWav(chunks, rate) {
+    let len = 0;
+    chunks.forEach((c) => (len += c.length));
+    const all = new Float32Array(len);
+    let o = 0;
+    chunks.forEach((c) => { all.set(c, o); o += c.length; });
+    const ratio = rate / 16000, outLen = Math.floor(len / ratio);
+    const pcm = new Int16Array(outLen);
+    for (let i = 0; i < outLen; i++) {
+      const a = Math.floor(i * ratio), b = Math.min(len, Math.max(a + 1, Math.floor((i + 1) * ratio)));
+      let s = 0;
+      for (let k = a; k < b; k++) s += all[k];
+      const v = Math.max(-1, Math.min(1, s / (b - a)));
+      pcm[i] = v < 0 ? v * 0x8000 : v * 0x7fff;
+    }
+    const buf = new ArrayBuffer(44 + pcm.length * 2), dv = new DataView(buf);
+    const w = (off, str) => { for (let i = 0; i < str.length; i++) dv.setUint8(off + i, str.charCodeAt(i)); };
+    w(0, "RIFF"); dv.setUint32(4, 36 + pcm.length * 2, true); w(8, "WAVE"); w(12, "fmt ");
+    dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, 16000, true); dv.setUint32(28, 32000, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+    w(36, "data"); dv.setUint32(40, pcm.length * 2, true);
+    new Int16Array(buf, 44).set(pcm);
+    return buf;
+  }
+
+  function stopAll() {
+    active = false;
+    releaseMic();
+    try { rec && rec.abort(); } catch {}
+    cancelSpeech();
+    replaying = false;
+    if (currentAsk) currentAsk.abort();
+    setState("idle", "Đã kết thúc", "Bấm micro để bắt đầu lại.");
+  }
+
+  mic.onclick = () => {
+    if (!active) {
+      active = true;
+      history = [];
+      newSession();
+      log.innerHTML = "";
+      ask("[start]", null);       // the tutor opens the conversation
+    } else if (state === "speaking") {
+      cancelSpeech();             // tap to skip her and talk
+      if (currentAsk) currentAsk.abort();   // stop the rest of her reply from streaming in
+    } else if (state === "listening") {
+      // If you've said something, the mic button sends it now; otherwise it ends the chat.
+      if (!(sendNow && sendNow())) stopAll();
+    }
+  };
+  $("stop").onclick = stopAll;
+
+  $("textForm").onsubmit = (e) => {
+    e.preventDefault();
+    const t = $("textIn").value.trim();
+    if (!t) return;
+    $("textIn").value = "";
+    try { rec && rec.abort(); } catch {}
+    cancelSpeech();
+    replaying = false;
+    if (currentAsk) currentAsk.abort();
+    capture = null; sendNow = null;   // typing replaces whatever you were saying
+    if (!active) {
+      active = true; history = []; newSession(); log.innerHTML = "";
+      history.push({ role: "user", content: "[start]" });
+      history.push({ role: "assistant", content: "[ZH] 你好！很高兴见到你。 || nǐ hǎo! hěn gāoxìng jiàndào nǐ. || Xin chào! Rất vui được gặp bạn.\n[ZH] 你今天过得怎么样？ || nǐ jīntiān guò de zěnmeyàng? || Hôm nay bạn thế nào?" });
+    }
+    state = "thinking";
+    ask(t, t);
+  };
+
+  if (!SR) {
+    hint.textContent = "Trình duyệt này không nghe được giọng bạn. Hãy mở bằng Microsoft Edge hoặc Google Chrome, hoặc gõ ở dưới.";
+  }
+  // Show which model the startup speed test picked.
+  const sub = document.querySelector(".sub");
+  const baseSub = sub.textContent;
+  sub.textContent = baseSub + " · đang thử các model…";
+  tutorFetch("/api/status").then((r) => r.json()).then((s) => {
+    const hit = (s.results || []).find((x) => x.model === s.chosen);
+    const t = hit && hit.avgMs ? ` (${(hit.avgMs / 1000).toFixed(1)}s)` : "";
+    sub.textContent = s.chosen ? `${baseSub} · ${s.chosen}${t}` : baseSub;
+    sub.title = (s.results || []).map((x) => `${x.model}: ${x.avgMs ? (x.avgMs / 1000).toFixed(1) + "s" : "lỗi"}`).join("\n");
+  }).catch(() => { sub.textContent = baseSub; });
+
+  $("keyBtn").onclick = () => TutorAPI.askKey(true);
+  window.addEventListener("beforeunload", () => cancelSpeech());
+})();
+</script>
+</body>
+</html>
