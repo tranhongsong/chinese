@@ -314,7 +314,8 @@
       .split(HAN_RUN)
       .map((p) => p.trim())
       .filter(Boolean);
-    return parts.reduce((p, part) => p.then(() => speakPiece(part, gen, hasHan(part) ? "zh" : "vi", mul)), Promise.resolve());
+    return parts.filter(hasHan)                       // chỉ đọc phần tiếng Trung, không dùng giọng Việt
+      .reduce((p, part) => p.then(() => speakPiece(part, gen, "zh", mul)), Promise.resolve());
   }
   function speakLine(p, gen) {
     if (p.type === "zh") return speakPiece(p.zh.replace(/[*_`#]/g, ""), gen, "zh", 1);
